@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { QRCodeSVG } from "qrcode.react";
 import { api, User, Chat, Message } from "@/lib/api";
 
 // Утилиты
@@ -181,6 +182,7 @@ function MessengerApp({ currentUser, onLogout }: { currentUser: User; onLogout: 
   const [loadingMessages, setLoadingMessages] = useState(false);
   const [sending, setSending] = useState(false);
   const [showSidebar, setShowSidebar] = useState(true);
+  const [showInviteModal, setShowInviteModal] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -424,6 +426,24 @@ function MessengerApp({ currentUser, onLogout }: { currentUser: User; onLogout: 
           )}
         </div>
 
+        {/* Пригласить друга */}
+        <div className="px-3 pb-2">
+          <button
+            onClick={() => setShowInviteModal(true)}
+            className="w-full flex items-center gap-2 px-3 py-2 rounded-xl bg-gradient-to-r from-[#5B8DEF]/20 to-[#7B5DEF]/20 hover:from-[#5B8DEF]/30 hover:to-[#7B5DEF]/30 border border-[#5B8DEF]/30 hover:border-[#5B8DEF]/50 transition-all group"
+          >
+            <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-[#5B8DEF] to-[#7B5DEF] flex items-center justify-center flex-shrink-0 shadow shadow-[#5B8DEF]/30">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5">
+                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+                <circle cx="9" cy="7" r="4"/>
+                <line x1="19" y1="8" x2="19" y2="14"/>
+                <line x1="22" y1="11" x2="16" y2="11"/>
+              </svg>
+            </div>
+            <span className="text-[#8899aa] group-hover:text-[#ddeeff] text-xs font-medium transition-colors">Пригласить друга</span>
+          </button>
+        </div>
+
         {/* Профиль */}
         <div className="p-3 border-t border-[#1e2e40] flex items-center gap-3">
           <Avatar name={currentUser.display_name} color={currentUser.avatar_color} size={38} status="online" />
@@ -444,6 +464,104 @@ function MessengerApp({ currentUser, onLogout }: { currentUser: User; onLogout: 
           </button>
         </div>
       </div>
+
+      {/* Модальное окно "Пригласить друга" */}
+      {showInviteModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
+          onClick={(e) => e.target === e.currentTarget && setShowInviteModal(false)}
+        >
+          <div className="bg-[#1e2736] rounded-2xl p-6 w-full max-w-sm mx-4 shadow-2xl border border-[#2a3a4a] animate-in fade-in zoom-in-95 duration-200">
+            {/* Заголовок */}
+            <div className="flex items-center justify-between mb-5">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#5B8DEF] to-[#7B5DEF] flex items-center justify-center shadow shadow-[#5B8DEF]/30">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5">
+                    <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+                    <circle cx="9" cy="7" r="4"/>
+                    <line x1="19" y1="8" x2="19" y2="14"/>
+                    <line x1="22" y1="11" x2="16" y2="11"/>
+                  </svg>
+                </div>
+                <h2 className="text-white font-bold text-base">Пригласить друга</h2>
+              </div>
+              <button
+                onClick={() => setShowInviteModal(false)}
+                className="w-7 h-7 rounded-lg hover:bg-[#2a3a4a] flex items-center justify-center text-[#556677] hover:text-white transition-colors"
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                  <line x1="18" y1="6" x2="6" y2="18"/>
+                  <line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+              </button>
+            </div>
+
+            {/* Описание */}
+            <p className="text-[#8899aa] text-sm text-center mb-5">
+              Поделись этой ссылкой или QR-кодом — друг сможет открыть <span className="text-[#5B8DEF] font-medium">БурмалКорд</span> прямо в браузере
+            </p>
+
+            {/* QR-код */}
+            <div className="flex justify-center mb-5">
+              <div className="p-4 bg-white rounded-2xl shadow-lg">
+                <QRCodeSVG
+                  value={window.location.origin}
+                  size={160}
+                  bgColor="#ffffff"
+                  fgColor="#0d1520"
+                  level="M"
+                />
+              </div>
+            </div>
+
+            {/* Ссылка */}
+            <div className="flex items-center gap-2 bg-[#141d2b] rounded-xl px-3 py-2.5 border border-[#2a3a4a] mb-4">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#556677" strokeWidth="2" className="flex-shrink-0">
+                <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+                <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+              </svg>
+              <span className="text-[#8899aa] text-xs flex-1 truncate">{window.location.origin}</span>
+              <button
+                onClick={() => {
+                  navigator.clipboard.writeText(window.location.origin);
+                }}
+                className="text-[#5B8DEF] hover:text-[#7B5DEF] transition-colors flex-shrink-0"
+                title="Скопировать"
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                </svg>
+              </button>
+            </div>
+
+            {/* Кнопка поделиться */}
+            <button
+              onClick={() => {
+                if (navigator.share) {
+                  navigator.share({
+                    title: "БурмалКорд",
+                    text: "Присоединяйся к БурмалКорд — мессенджеру нового поколения!",
+                    url: window.location.origin,
+                  });
+                } else {
+                  navigator.clipboard.writeText(window.location.origin);
+                }
+              }}
+              className="w-full py-2.5 bg-gradient-to-r from-[#5B8DEF] to-[#7B5DEF] text-white rounded-xl text-sm font-medium hover:opacity-90 transition-opacity shadow-lg shadow-[#5B8DEF]/30 flex items-center justify-center gap-2"
+            >
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
+                <circle cx="18" cy="5" r="3"/>
+                <circle cx="6" cy="12" r="3"/>
+                <circle cx="18" cy="19" r="3"/>
+                <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
+                <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+              </svg>
+              Поделиться ссылкой
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Область сообщений */}
       <div className="flex-1 flex flex-col min-w-0">
