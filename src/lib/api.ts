@@ -34,12 +34,25 @@ export interface Message {
   sender_color: string;
 }
 
-async function apiFetch(path: string, options?: RequestInit) {
-  const res = await fetch(`${API_URL}${path}`, {
-    headers: { "Content-Type": "application/json" },
-    ...options,
-  });
-  return res.json();
+async function apiFetch(path: string, options?: RequestInit, retries = 2) {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 10000);
+  try {
+    const res = await fetch(`${API_URL}${path}`, {
+      headers: { "Content-Type": "application/json" },
+      signal: controller.signal,
+      ...options,
+    });
+    clearTimeout(timeout);
+    return res.json();
+  } catch (err) {
+    clearTimeout(timeout);
+    if (retries > 0) {
+      await new Promise((r) => setTimeout(r, 800));
+      return apiFetch(path, options, retries - 1);
+    }
+    throw err;
+  }
 }
 
 export const api = {
