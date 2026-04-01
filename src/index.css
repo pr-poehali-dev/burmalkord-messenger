@@ -97,5 +97,42 @@
 
   body {
     @apply bg-background text-foreground;
+    overscroll-behavior: none;
+  }
+
+  html,
+  body,
+  #root {
+    height: 100%;
+    height: 100dvh;
+  }
+}
+
+@layer utilities {
+  .safe-top {
+    padding-top: max(1rem, env(safe-area-inset-top));
+  }
+
+  .safe-bottom {
+    padding-bottom: max(0.5rem, env(safe-area-inset-bottom));
+  }
+
+  /* Скрываем скроллбары на мобильном */
+  .overflow-y-auto {
+    scrollbar-width: thin;
+    scrollbar-color: #1e2e40 transparent;
+  }
+
+  .overflow-y-auto::-webkit-scrollbar {
+    width: 3px;
+  }
+
+  .overflow-y-auto::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .overflow-y-auto::-webkit-scrollbar-thumb {
+    background: #1e2e40;
+    border-radius: 10px;
   }
 }
