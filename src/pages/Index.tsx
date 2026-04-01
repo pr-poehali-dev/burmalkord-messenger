@@ -1,271 +1,627 @@
-import { useState, useEffect } from "react";
-import Icon from "@/components/ui/icon";
+import { useState, useEffect, useRef } from "react";
+import { api, User, Chat, Message } from "@/lib/api";
 
-const Index = () => {
-  const [scrolled, setScrolled] = useState(false);
-  const [formData, setFormData] = useState({ name: "", email: "", message: "" });
+// Утилиты
+function formatTime(iso: string) {
+  const d = new Date(iso);
+  const now = new Date();
+  const diffDays = Math.floor((now.getTime() - d.getTime()) / 86400000);
+  if (diffDays === 0) return d.toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" });
+  if (diffDays === 1) return "Вчера";
+  if (diffDays < 7) return d.toLocaleDateString("ru-RU", { weekday: "short" });
+  return d.toLocaleDateString("ru-RU", { day: "2-digit", month: "2-digit" });
+}
 
-  useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 40);
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+function getInitials(name: string) {
+  return name
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2);
+}
 
-  const features = [
-    {
-      icon: "Sparkles",
-      title: "Уникальный дизайн",
-      desc: "Каждый проект создаётся индивидуально — без шаблонов и безликих решений.",
-    },
-    {
-      icon: "Zap",
-      title: "Быстрый запуск",
-      desc: "От идеи до готового сайта — за считанные дни, не месяцы.",
-    },
-    {
-      icon: "Shield",
-      title: "Надёжность",
-      desc: "Современный стек технологий, поддержка и развитие после запуска.",
-    },
-    {
-      icon: "Heart",
-      title: "С душой",
-      desc: "Мы вкладываем смысл в каждую деталь, которую видит ваш пользователь.",
-    },
-  ];
-
-  const works = [
-    { label: "Проекты", value: "47+" },
-    { label: "Лет опыта", value: "8" },
-    { label: "Довольных клиентов", value: "39" },
-    { label: "Чашек кофе", value: "∞" },
-  ];
-
+// Аватар
+function Avatar({ name, color, size = 40, status }: { name: string; color: string; size?: number; status?: string }) {
   return (
-    <div className="min-h-screen bg-studio-bg text-studio-text font-golos overflow-x-hidden">
-
-      {/* NAV */}
-      <nav
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
-          scrolled ? "bg-studio-bg/90 backdrop-blur-md border-b border-studio-border" : ""
-        }`}
+    <div className="relative flex-shrink-0">
+      <div
+        className="rounded-full flex items-center justify-center font-semibold text-white select-none"
+        style={{ width: size, height: size, background: color, fontSize: size * 0.35 }}
       >
-        <div className="max-w-6xl mx-auto px-6 py-5 flex items-center justify-between">
-          <span className="font-cormorant text-2xl font-semibold tracking-widest text-studio-gold uppercase">
-            Студия
-          </span>
-          <div className="hidden md:flex items-center gap-8 text-sm text-studio-muted">
-            <a href="#about" className="hover:text-studio-text transition-colors">О нас</a>
-            <a href="#features" className="hover:text-studio-text transition-colors">Услуги</a>
-            <a href="#contact" className="hover:text-studio-text transition-colors">Контакты</a>
-          </div>
-          <a
-            href="#contact"
-            className="btn-primary text-sm px-5 py-2.5 rounded-full"
-          >
-            Обсудить проект
-          </a>
-        </div>
-      </nav>
-
-      {/* HERO */}
-      <section className="relative min-h-screen flex items-center justify-center px-6 pt-24 pb-16 overflow-hidden">
-        {/* decorative orbs */}
-        <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-studio-gold/8 rounded-full blur-[120px] pointer-events-none" />
-        <div className="absolute bottom-1/4 right-1/4 w-[350px] h-[350px] bg-studio-accent/10 rounded-full blur-[100px] pointer-events-none" />
-        {/* grain overlay */}
-        <div className="absolute inset-0 noise-bg opacity-30 pointer-events-none" />
-
-        <div className="relative z-10 max-w-5xl mx-auto text-center">
-          {/* eyebrow */}
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-studio-border bg-studio-surface mb-10 animate-fade-in">
-            <span className="w-1.5 h-1.5 rounded-full bg-studio-gold animate-pulse" />
-            <span className="text-xs tracking-widest uppercase text-studio-muted font-medium">
-              Веб‑студия нового поколения
-            </span>
-          </div>
-
-          <h1
-            className="font-cormorant text-6xl md:text-8xl lg:text-[110px] leading-[0.95] font-light text-studio-text mb-8"
-            style={{ animationDelay: "0.1s" }}
-          >
-            Мы создаём
-            <br />
-            <em className="text-studio-gold not-italic">цифровые</em>
-            <br />
-            пространства
-          </h1>
-
-          <p className="text-studio-muted text-lg md:text-xl max-w-xl mx-auto mb-12 leading-relaxed">
-            Сайты, интерфейсы и бренды, которые западают в память
-            и работают на ваш бизнес годами.
-          </p>
-
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-            <a href="#contact" className="btn-primary px-8 py-4 rounded-full text-base font-medium group">
-              Начать проект
-              <Icon name="ArrowRight" size={18} className="inline ml-2 group-hover:translate-x-1 transition-transform" />
-            </a>
-            <a href="#features" className="btn-ghost px-8 py-4 rounded-full text-base">
-              Посмотреть работы
-            </a>
-          </div>
-        </div>
-
-        {/* scroll hint */}
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 opacity-40">
-          <span className="text-xs tracking-widest uppercase">Скролл</span>
-          <Icon name="ChevronDown" size={16} className="animate-bounce" />
-        </div>
-      </section>
-
-      {/* STATS */}
-      <section id="about" className="py-16 border-y border-studio-border bg-studio-surface/50">
-        <div className="max-w-5xl mx-auto px-6 grid grid-cols-2 md:grid-cols-4 gap-8">
-          {works.map((w) => (
-            <div key={w.label} className="text-center">
-              <div className="font-cormorant text-5xl md:text-6xl font-semibold text-studio-gold mb-1">
-                {w.value}
-              </div>
-              <div className="text-studio-muted text-sm tracking-wide">{w.label}</div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* FEATURES */}
-      <section id="features" className="py-28 px-6">
-        <div className="max-w-5xl mx-auto">
-          <div className="mb-16">
-            <p className="text-studio-gold text-xs tracking-[0.25em] uppercase mb-4">Что мы делаем</p>
-            <h2 className="font-cormorant text-5xl md:text-6xl font-light leading-tight max-w-lg">
-              Подход, который<br /><em className="not-italic text-studio-gold">отличает</em> нас
-            </h2>
-          </div>
-
-          <div className="grid md:grid-cols-2 gap-px bg-studio-border rounded-2xl overflow-hidden">
-            {features.map((f, i) => (
-              <div
-                key={i}
-                className="bg-studio-bg p-8 md:p-10 group hover:bg-studio-surface transition-colors duration-300"
-              >
-                <div className="w-12 h-12 rounded-2xl bg-studio-gold/10 border border-studio-gold/20 flex items-center justify-center mb-6 group-hover:bg-studio-gold/20 transition-colors">
-                  <Icon name={f.icon as any} size={22} className="text-studio-gold" />
-                </div>
-                <h3 className="font-cormorant text-2xl font-semibold mb-3 text-studio-text">
-                  {f.title}
-                </h3>
-                <p className="text-studio-muted leading-relaxed">{f.desc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* QUOTE BAND */}
-      <section className="py-20 border-y border-studio-border bg-studio-gold/5 overflow-hidden relative">
-        <div className="absolute inset-0 noise-bg opacity-20 pointer-events-none" />
-        <div className="max-w-4xl mx-auto px-6 text-center relative z-10">
-          <Icon name="Quote" size={40} className="text-studio-gold/40 mx-auto mb-6" />
-          <blockquote className="font-cormorant text-3xl md:text-5xl font-light leading-snug text-studio-text italic mb-6">
-            «Дизайн — это не то, как вещь выглядит.<br />
-            Это то, как она работает.»
-          </blockquote>
-          <cite className="text-studio-muted text-sm tracking-widest uppercase not-italic">
-            — Стив Джобс
-          </cite>
-        </div>
-      </section>
-
-      {/* CONTACT */}
-      <section id="contact" className="py-28 px-6">
-        <div className="max-w-4xl mx-auto">
-          <div className="mb-14">
-            <p className="text-studio-gold text-xs tracking-[0.25em] uppercase mb-4">Связаться</p>
-            <h2 className="font-cormorant text-5xl md:text-6xl font-light leading-tight">
-              Расскажите<br />о вашем <em className="not-italic text-studio-gold">проекте</em>
-            </h2>
-          </div>
-
-          <div className="grid md:grid-cols-2 gap-12">
-            <div className="space-y-6">
-              <div>
-                <label className="block text-xs tracking-widest uppercase text-studio-muted mb-2">
-                  Имя
-                </label>
-                <input
-                  type="text"
-                  placeholder="Иван Иванов"
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="studio-input"
-                />
-              </div>
-              <div>
-                <label className="block text-xs tracking-widest uppercase text-studio-muted mb-2">
-                  Email
-                </label>
-                <input
-                  type="email"
-                  placeholder="hello@example.com"
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  className="studio-input"
-                />
-              </div>
-            </div>
-
-            <div className="flex flex-col">
-              <label className="block text-xs tracking-widest uppercase text-studio-muted mb-2">
-                Сообщение
-              </label>
-              <textarea
-                rows={5}
-                placeholder="Опишите задачу или идею..."
-                value={formData.message}
-                onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                className="studio-input flex-1 resize-none"
-              />
-            </div>
-          </div>
-
-          <div className="mt-8 flex flex-col sm:flex-row items-start sm:items-center gap-6">
-            <button className="btn-primary px-10 py-4 rounded-full text-base font-medium group">
-              Отправить
-              <Icon name="Send" size={16} className="inline ml-2 group-hover:translate-x-1 transition-transform" />
-            </button>
-            <span className="text-studio-muted text-sm">
-              Ответим в течение 24 часов
-            </span>
-          </div>
-        </div>
-      </section>
-
-      {/* FOOTER */}
-      <footer className="border-t border-studio-border py-10 px-6">
-        <div className="max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
-          <span className="font-cormorant text-xl font-semibold tracking-widest text-studio-gold uppercase">
-            Студия
-          </span>
-          <p className="text-studio-muted text-sm">
-            © {new Date().getFullYear()} — Все права защищены
-          </p>
-          <div className="flex items-center gap-5">
-            <a href="#" className="text-studio-muted hover:text-studio-text transition-colors">
-              <Icon name="Instagram" size={18} />
-            </a>
-            <a href="#" className="text-studio-muted hover:text-studio-text transition-colors">
-              <Icon name="Send" size={18} />
-            </a>
-            <a href="#" className="text-studio-muted hover:text-studio-text transition-colors">
-              <Icon name="Globe" size={18} />
-            </a>
-          </div>
-        </div>
-      </footer>
-
+        {getInitials(name)}
+      </div>
+      {status && (
+        <span
+          className="absolute bottom-0 right-0 rounded-full border-2 border-[#1e2736]"
+          style={{
+            width: size * 0.3,
+            height: size * 0.3,
+            background: status === "online" ? "#4CAF50" : "#9E9E9E",
+          }}
+        />
+      )}
     </div>
   );
-};
+}
 
-export default Index;
+// Экран входа
+function LoginScreen({ onLogin }: { onLogin: (user: User) => void }) {
+  const [tab, setTab] = useState<"login" | "register">("login");
+  const [username, setUsername] = useState("");
+  const [displayName, setDisplayName] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const handleLogin = async () => {
+    if (!username.trim()) return;
+    setLoading(true);
+    setError("");
+    try {
+      const res = await api.login(username.trim());
+      if (res.error) setError(res.error);
+      else onLogin(res.user);
+    } catch {
+      setError("Ошибка соединения");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRegister = async () => {
+    if (!username.trim() || !displayName.trim()) return;
+    setLoading(true);
+    setError("");
+    try {
+      const res = await api.register(username.trim(), displayName.trim());
+      if (res.error) setError(res.error);
+      else onLogin(res.user);
+    } catch {
+      setError("Ошибка соединения");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-[#0d1520] flex items-center justify-center">
+      <div className="w-full max-w-sm">
+        {/* Логотип */}
+        <div className="text-center mb-8">
+          <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-[#5B8DEF] to-[#7B5DEF] flex items-center justify-center mx-auto mb-4 shadow-lg shadow-[#5B8DEF]/30">
+            <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+              <path d="M8 28L4 36L14 32H32C34.2 32 36 30.2 36 28V12C36 9.8 34.2 8 32 8H8C5.8 8 4 9.8 4 12V28H8Z" fill="white" opacity="0.9"/>
+              <circle cx="13" cy="20" r="2.5" fill="#5B8DEF"/>
+              <circle cx="20" cy="20" r="2.5" fill="#5B8DEF"/>
+              <circle cx="27" cy="20" r="2.5" fill="#5B8DEF"/>
+            </svg>
+          </div>
+          <h1 className="text-white text-3xl font-bold tracking-wide">БурмалКорд</h1>
+          <p className="text-[#8899aa] mt-1 text-sm">Мессенджер нового поколения</p>
+        </div>
+
+        {/* Карточка */}
+        <div className="bg-[#1e2736] rounded-2xl p-6 shadow-2xl">
+          {/* Табы */}
+          <div className="flex bg-[#141d2b] rounded-xl p-1 mb-6">
+            <button
+              onClick={() => setTab("login")}
+              className={`flex-1 py-2 rounded-lg text-sm font-medium transition-all ${
+                tab === "login"
+                  ? "bg-[#5B8DEF] text-white shadow"
+                  : "text-[#8899aa] hover:text-white"
+              }`}
+            >
+              Войти
+            </button>
+            <button
+              onClick={() => setTab("register")}
+              className={`flex-1 py-2 rounded-lg text-sm font-medium transition-all ${
+                tab === "register"
+                  ? "bg-[#5B8DEF] text-white shadow"
+                  : "text-[#8899aa] hover:text-white"
+              }`}
+            >
+              Регистрация
+            </button>
+          </div>
+
+          <div className="space-y-3">
+            {tab === "register" && (
+              <input
+                className="w-full bg-[#141d2b] text-white rounded-xl px-4 py-3 text-sm outline-none border border-[#2a3a4a] focus:border-[#5B8DEF] transition-colors placeholder:text-[#556677]"
+                placeholder="Ваше имя"
+                value={displayName}
+                onChange={(e) => setDisplayName(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleRegister()}
+              />
+            )}
+            <input
+              className="w-full bg-[#141d2b] text-white rounded-xl px-4 py-3 text-sm outline-none border border-[#2a3a4a] focus:border-[#5B8DEF] transition-colors placeholder:text-[#556677]"
+              placeholder="Имя пользователя (login)"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && (tab === "login" ? handleLogin() : handleRegister())}
+            />
+
+            {error && (
+              <p className="text-[#ff5555] text-xs bg-[#ff555520] px-3 py-2 rounded-lg">{error}</p>
+            )}
+
+            <button
+              onClick={tab === "login" ? handleLogin : handleRegister}
+              disabled={loading}
+              className="w-full py-3 bg-gradient-to-r from-[#5B8DEF] to-[#7B5DEF] text-white rounded-xl font-medium text-sm hover:opacity-90 transition-opacity disabled:opacity-60 shadow-lg shadow-[#5B8DEF]/30"
+            >
+              {loading ? "Загрузка..." : tab === "login" ? "Войти" : "Зарегистрироваться"}
+            </button>
+          </div>
+
+          {tab === "login" && (
+            <p className="text-[#556677] text-xs text-center mt-4">
+              Тестовые аккаунты: alex, maria, ivan, kate, dmitry
+            </p>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Главный интерфейс мессенджера
+function MessengerApp({ currentUser, onLogout }: { currentUser: User; onLogout: () => void }) {
+  const [chats, setChats] = useState<Chat[]>([]);
+  const [selectedChat, setSelectedChat] = useState<Chat | null>(null);
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [newMessage, setNewMessage] = useState("");
+  const [users, setUsers] = useState<User[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [showNewChat, setShowNewChat] = useState(false);
+  const [loadingChats, setLoadingChats] = useState(true);
+  const [loadingMessages, setLoadingMessages] = useState(false);
+  const [sending, setSending] = useState(false);
+  const [showSidebar, setShowSidebar] = useState(true);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  // Загрузка чатов
+  const loadChats = async () => {
+    try {
+      const res = await api.getChats(currentUser.id);
+      if (res.chats) setChats(res.chats);
+    } finally {
+      setLoadingChats(false);
+    }
+  };
+
+  // Загрузка сообщений
+  const loadMessages = async (chatId: string) => {
+    setLoadingMessages(true);
+    try {
+      const res = await api.getMessages(chatId, currentUser.id);
+      if (res.messages) {
+        setMessages(res.messages);
+        setTimeout(() => messagesEndRef.current?.scrollIntoView({ behavior: "smooth" }), 50);
+      }
+    } finally {
+      setLoadingMessages(false);
+    }
+  };
+
+  useEffect(() => {
+    loadChats();
+    const res = api.getUsers();
+    res.then((r) => r.users && setUsers(r.users));
+
+    // Опрос новых сообщений
+    pollingRef.current = setInterval(() => {
+      loadChats();
+    }, 3000);
+
+    return () => {
+      if (pollingRef.current) clearInterval(pollingRef.current);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (selectedChat) {
+      loadMessages(selectedChat.id);
+      const msgPoll = setInterval(() => loadMessages(selectedChat.id), 2000);
+      return () => clearInterval(msgPoll);
+    }
+  }, [selectedChat?.id]);
+
+  const handleSelectChat = (chat: Chat) => {
+    setSelectedChat(chat);
+    setShowNewChat(false);
+    inputRef.current?.focus();
+  };
+
+  const handleSendMessage = async () => {
+    if (!newMessage.trim() || !selectedChat || sending) return;
+    const text = newMessage.trim();
+    setNewMessage("");
+    setSending(true);
+    try {
+      const res = await api.sendMessage(selectedChat.id, currentUser.id, text);
+      if (res.message) {
+        setMessages((prev) => [...prev, res.message]);
+        setTimeout(() => messagesEndRef.current?.scrollIntoView({ behavior: "smooth" }), 50);
+        loadChats();
+      }
+    } finally {
+      setSending(false);
+      inputRef.current?.focus();
+    }
+  };
+
+  const handleStartChat = async (user: User) => {
+    const res = await api.createChat(currentUser.id, user.id);
+    if (res.chat_id) {
+      await loadChats();
+      const updatedChats = await api.getChats(currentUser.id);
+      const chat = updatedChats.chats?.find((c: Chat) => c.id === res.chat_id);
+      if (chat) {
+        setChats(updatedChats.chats);
+        setSelectedChat(chat);
+      }
+    }
+    setShowNewChat(false);
+  };
+
+  const filteredChats = chats.filter((c) => {
+    const name = c.is_group ? c.name : c.other_user_name;
+    return name?.toLowerCase().includes(searchQuery.toLowerCase());
+  });
+
+  const filteredUsers = users.filter(
+    (u) =>
+      u.id !== currentUser.id &&
+      (u.display_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        u.username.toLowerCase().includes(searchQuery.toLowerCase()))
+  );
+
+  const getChatName = (chat: Chat) => {
+    if (chat.is_group) return chat.name || "Группа";
+    return chat.other_user_name || "Неизвестный";
+  };
+
+  const getChatColor = (chat: Chat) => {
+    if (chat.is_group) return "#9C27B0";
+    return chat.other_user_color || "#5B8DEF";
+  };
+
+  return (
+    <div className="flex h-screen bg-[#0d1520] text-white overflow-hidden">
+      {/* Боковая панель */}
+      <div
+        className={`flex flex-col bg-[#131d2b] border-r border-[#1e2e40] transition-all duration-300 ${
+          showSidebar ? "w-[320px] min-w-[280px]" : "w-0 overflow-hidden"
+        }`}
+      >
+        {/* Шапка боковой панели */}
+        <div className="p-4 border-b border-[#1e2e40]">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#5B8DEF] to-[#7B5DEF] flex items-center justify-center">
+                <svg width="18" height="18" viewBox="0 0 40 40" fill="none">
+                  <path d="M8 28L4 36L14 32H32C34.2 32 36 30.2 36 28V12C36 9.8 34.2 8 32 8H8C5.8 8 4 9.8 4 12V28H8Z" fill="white"/>
+                </svg>
+              </div>
+              <span className="font-bold text-white text-sm">БурмалКорд</span>
+            </div>
+            <button
+              onClick={() => setShowNewChat(!showNewChat)}
+              className="w-8 h-8 rounded-lg bg-[#1e2e40] hover:bg-[#2a3e50] transition-colors flex items-center justify-center text-[#8899aa] hover:text-white"
+              title="Новый чат"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M12 5v14M5 12h14"/>
+              </svg>
+            </button>
+          </div>
+
+          {/* Поиск */}
+          <div className="relative">
+            <svg
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-[#556677]"
+              width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
+            >
+              <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+            </svg>
+            <input
+              className="w-full bg-[#1e2e40] text-white rounded-xl pl-9 pr-4 py-2 text-sm outline-none placeholder:text-[#556677] focus:bg-[#253040]"
+              placeholder="Поиск..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
+        </div>
+
+        {/* Список контактов для нового чата */}
+        {showNewChat && (
+          <div className="border-b border-[#1e2e40]">
+            <div className="px-4 py-2">
+              <p className="text-[#8899aa] text-xs font-medium uppercase tracking-wider">Новый чат</p>
+            </div>
+            <div className="max-h-48 overflow-y-auto">
+              {filteredUsers.map((user) => (
+                <button
+                  key={user.id}
+                  onClick={() => handleStartChat(user)}
+                  className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-[#1e2e40] transition-colors"
+                >
+                  <Avatar name={user.display_name} color={user.avatar_color} size={36} status={user.status} />
+                  <div className="text-left">
+                    <p className="text-white text-sm font-medium">{user.display_name}</p>
+                    <p className="text-[#556677] text-xs">@{user.username}</p>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Список чатов */}
+        <div className="flex-1 overflow-y-auto">
+          {loadingChats ? (
+            <div className="flex items-center justify-center h-24">
+              <div className="w-6 h-6 border-2 border-[#5B8DEF] border-t-transparent rounded-full animate-spin" />
+            </div>
+          ) : filteredChats.length === 0 ? (
+            <div className="flex flex-col items-center justify-center h-32 text-[#556677]">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="mb-2 opacity-50">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+              </svg>
+              <p className="text-sm">Нет чатов</p>
+              <button onClick={() => setShowNewChat(true)} className="text-[#5B8DEF] text-xs mt-1 hover:underline">
+                Начать переписку
+              </button>
+            </div>
+          ) : (
+            filteredChats.map((chat) => {
+              const name = getChatName(chat);
+              const color = getChatColor(chat);
+              const isSelected = selectedChat?.id === chat.id;
+              return (
+                <button
+                  key={chat.id}
+                  onClick={() => handleSelectChat(chat)}
+                  className={`w-full flex items-center gap-3 px-4 py-3 transition-colors ${
+                    isSelected ? "bg-[#1e3a5f]" : "hover:bg-[#1a2535]"
+                  }`}
+                >
+                  <Avatar
+                    name={name}
+                    color={color}
+                    size={48}
+                    status={chat.is_group ? undefined : (chat.other_user_status as "online" | "offline" | undefined)}
+                  />
+                  <div className="flex-1 min-w-0 text-left">
+                    <div className="flex items-center justify-between">
+                      <p className="text-white text-sm font-medium truncate">{name}</p>
+                      {chat.last_message_at && (
+                        <span className="text-[#556677] text-xs ml-2 flex-shrink-0">
+                          {formatTime(chat.last_message_at)}
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex items-center justify-between mt-0.5">
+                      <p className="text-[#8899aa] text-xs truncate">
+                        {chat.last_message || "Нет сообщений"}
+                      </p>
+                      {chat.unread_count > 0 && (
+                        <span className="ml-2 flex-shrink-0 bg-[#5B8DEF] text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-medium">
+                          {chat.unread_count > 9 ? "9+" : chat.unread_count}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </button>
+              );
+            })
+          )}
+        </div>
+
+        {/* Профиль */}
+        <div className="p-3 border-t border-[#1e2e40] flex items-center gap-3">
+          <Avatar name={currentUser.display_name} color={currentUser.avatar_color} size={38} status="online" />
+          <div className="flex-1 min-w-0">
+            <p className="text-white text-sm font-medium truncate">{currentUser.display_name}</p>
+            <p className="text-[#4CAF50] text-xs">В сети</p>
+          </div>
+          <button
+            onClick={onLogout}
+            className="w-7 h-7 rounded-lg hover:bg-[#1e2e40] transition-colors flex items-center justify-center text-[#556677] hover:text-[#ff5555]"
+            title="Выйти"
+          >
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+              <polyline points="16 17 21 12 16 7"/>
+              <line x1="21" y1="12" x2="9" y2="12"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      {/* Область сообщений */}
+      <div className="flex-1 flex flex-col min-w-0">
+        {selectedChat ? (
+          <>
+            {/* Шапка чата */}
+            <div className="flex items-center gap-3 px-4 py-3 bg-[#131d2b] border-b border-[#1e2e40] shadow-sm">
+              <button
+                onClick={() => setShowSidebar(!showSidebar)}
+                className="w-8 h-8 rounded-lg hover:bg-[#1e2e40] flex items-center justify-center text-[#8899aa] hover:text-white transition-colors"
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <line x1="3" y1="12" x2="21" y2="12"/>
+                  <line x1="3" y1="6" x2="21" y2="6"/>
+                  <line x1="3" y1="18" x2="21" y2="18"/>
+                </svg>
+              </button>
+              <Avatar
+                name={getChatName(selectedChat)}
+                color={getChatColor(selectedChat)}
+                size={38}
+                status={selectedChat.is_group ? undefined : (selectedChat.other_user_status as "online" | "offline" | undefined)}
+              />
+              <div>
+                <p className="text-white font-semibold text-sm">{getChatName(selectedChat)}</p>
+                <p className="text-xs text-[#8899aa]">
+                  {selectedChat.is_group
+                    ? "Группа"
+                    : selectedChat.other_user_status === "online"
+                    ? <span className="text-[#4CAF50]">В сети</span>
+                    : "Был(а) недавно"}
+                </p>
+              </div>
+            </div>
+
+            {/* Сообщения */}
+            <div className="flex-1 overflow-y-auto px-4 py-4 space-y-2" style={{ background: "linear-gradient(180deg, #0d1520 0%, #111a27 100%)" }}>
+              {loadingMessages ? (
+                <div className="flex justify-center py-8">
+                  <div className="w-6 h-6 border-2 border-[#5B8DEF] border-t-transparent rounded-full animate-spin" />
+                </div>
+              ) : messages.length === 0 ? (
+                <div className="flex flex-col items-center justify-center h-full text-[#556677] py-16">
+                  <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" className="mb-3 opacity-30">
+                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                  </svg>
+                  <p className="text-sm">Нет сообщений</p>
+                  <p className="text-xs mt-1">Начните переписку!</p>
+                </div>
+              ) : (
+                <>
+                  {messages.map((msg, idx) => {
+                    const isMe = msg.sender_id === currentUser.id;
+                    const prevMsg = messages[idx - 1];
+                    const showAvatar = !isMe && (!prevMsg || prevMsg.sender_id !== msg.sender_id);
+                    const showName = selectedChat.is_group && !isMe && showAvatar;
+
+                    return (
+                      <div
+                        key={msg.id}
+                        className={`flex items-end gap-2 ${isMe ? "flex-row-reverse" : "flex-row"}`}
+                      >
+                        {/* Аватар */}
+                        <div className="w-8 flex-shrink-0">
+                          {!isMe && showAvatar && (
+                            <Avatar name={msg.sender_name} color={msg.sender_color} size={30} />
+                          )}
+                        </div>
+
+                        {/* Пузырь */}
+                        <div className={`max-w-[60%] ${isMe ? "items-end" : "items-start"} flex flex-col`}>
+                          {showName && (
+                            <span className="text-xs font-medium mb-1 px-1" style={{ color: msg.sender_color }}>
+                              {msg.sender_name}
+                            </span>
+                          )}
+                          <div
+                            className={`px-3 py-2 rounded-2xl text-sm leading-relaxed break-words ${
+                              isMe
+                                ? "bg-gradient-to-br from-[#5B8DEF] to-[#4a7de0] text-white rounded-br-sm"
+                                : "bg-[#1e2e40] text-[#ddeeff] rounded-bl-sm"
+                            }`}
+                          >
+                            {msg.content}
+                          </div>
+                          <span className={`text-[10px] mt-1 text-[#556677] px-1 flex items-center gap-1 ${isMe ? "flex-row-reverse" : ""}`}>
+                            {formatTime(msg.created_at)}
+                            {isMe && (
+                              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={msg.is_read ? "#5B8DEF" : "#556677"} strokeWidth="2">
+                                <polyline points="20 6 9 17 4 12"/>
+                              </svg>
+                            )}
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                  <div ref={messagesEndRef} />
+                </>
+              )}
+            </div>
+
+            {/* Ввод сообщения */}
+            <div className="px-4 py-3 bg-[#131d2b] border-t border-[#1e2e40]">
+              <div className="flex items-center gap-2 bg-[#1e2e40] rounded-2xl px-4 py-2">
+                <input
+                  ref={inputRef}
+                  className="flex-1 bg-transparent text-white text-sm outline-none placeholder:text-[#556677]"
+                  placeholder="Написать сообщение..."
+                  value={newMessage}
+                  onChange={(e) => setNewMessage(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && !e.shiftKey) {
+                      e.preventDefault();
+                      handleSendMessage();
+                    }
+                  }}
+                />
+                <button
+                  onClick={handleSendMessage}
+                  disabled={!newMessage.trim() || sending}
+                  className="w-8 h-8 rounded-xl bg-[#5B8DEF] hover:bg-[#4a7de0] disabled:opacity-40 flex items-center justify-center transition-colors flex-shrink-0"
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5">
+                    <line x1="22" y1="2" x2="11" y2="13"/>
+                    <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </>
+        ) : (
+          /* Экран приветствия */
+          <div className="flex-1 flex flex-col items-center justify-center bg-[#0d1520]">
+            <div className="text-center">
+              <div className="w-24 h-24 rounded-3xl bg-gradient-to-br from-[#5B8DEF] to-[#7B5DEF] flex items-center justify-center mx-auto mb-6 shadow-xl shadow-[#5B8DEF]/20">
+                <svg width="52" height="52" viewBox="0 0 40 40" fill="none">
+                  <path d="M8 28L4 36L14 32H32C34.2 32 36 30.2 36 28V12C36 9.8 34.2 8 32 8H8C5.8 8 4 9.8 4 12V28H8Z" fill="white" opacity="0.9"/>
+                  <circle cx="13" cy="20" r="2.5" fill="#5B8DEF"/>
+                  <circle cx="20" cy="20" r="2.5" fill="#5B8DEF"/>
+                  <circle cx="27" cy="20" r="2.5" fill="#5B8DEF"/>
+                </svg>
+              </div>
+              <h2 className="text-white text-2xl font-bold mb-2">Добро пожаловать в БурмалКорд</h2>
+              <p className="text-[#8899aa] text-sm max-w-xs">
+                Выберите чат слева или начните новую переписку, нажав на <span className="text-[#5B8DEF]">+</span>
+              </p>
+              <button
+                onClick={() => setShowNewChat(true)}
+                className="mt-6 px-6 py-2.5 bg-gradient-to-r from-[#5B8DEF] to-[#7B5DEF] text-white rounded-xl text-sm font-medium hover:opacity-90 transition-opacity shadow-lg shadow-[#5B8DEF]/30"
+              >
+                Начать чат
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// Корневой компонент
+export default function Index() {
+  const [currentUser, setCurrentUser] = useState<User | null>(() => {
+    const saved = localStorage.getItem("burmalkord_user");
+    return saved ? JSON.parse(saved) : null;
+  });
+
+  const handleLogin = (user: User) => {
+    localStorage.setItem("burmalkord_user", JSON.stringify(user));
+    setCurrentUser(user);
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem("burmalkord_user");
+    setCurrentUser(null);
+  };
+
+  if (!currentUser) return <LoginScreen onLogin={handleLogin} />;
+  return <MessengerApp currentUser={currentUser} onLogout={handleLogout} />;
+}

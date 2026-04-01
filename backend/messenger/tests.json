@@ -1,0 +1,27 @@
+[
+  {
+    "name": "GET /users - список пользователей",
+    "method": "GET",
+    "path": "/users",
+    "expectedStatus": 200
+  },
+  {
+    "name": "POST /login - вход как alex",
+    "method": "POST",
+    "path": "/login",
+    "body": { "username": "alex" },
+    "expectedStatus": 200
+  },
+  {
+    "name": "GET /chats - чаты Алексея",
+    "method": "GET",
+    "path": "/chats?user_id=a1b2c3d4-0001-0001-0001-000000000001",
+    "expectedStatus": 200
+  },
+  {
+    "name": "GET /messages - сообщения чата",
+    "method": "GET",
+    "path": "/messages?chat_id=b1b2c3d4-0001-0001-0001-000000000001",
+    "expectedStatus": 200
+  }
+]
